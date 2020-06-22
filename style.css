@@ -32,3 +32,13 @@ body {
 	position: absolute;
 	z-index: 100;
 }
+
+#announce {
+	font-family: monospace;
+	font-size: 20px;
+	font-weight: bolder;
+	position: absolute;
+	z-index: 200;
+	left: 10vw;
+	top: 1vh;
+}

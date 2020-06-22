@@ -61,6 +61,7 @@ class Entity {
 
 const entities = [];
 let turn = 0;
+let turnsLeft = 5;
 let entitySize;
 let boardheight = document.getElementById("board").height;
 let gameArea = document.getElementById("board").height * 100 / window.innerHeight;
@@ -124,6 +125,10 @@ const resetGame = () => {
 	entitySize = document.getElementsByClassName("player")[0].width;
 };
 
+const announce = (txt) => {
+	document.getElementById("announce").innerHTML = txt;
+};
+
 const resetAllClickables = () => {
 	for (const entity of entities)
 		entity.reset();
@@ -154,7 +159,8 @@ canvas.onclick = (e) => {
 			x < window.innerWidth/100 * entity.x + entitySize &&
 			y > window.innerHeight/100 * entity.y &&
 			y < window.innerHeight/100 * entity.y + entitySize &&
-			(entity.type === 0 || entity.type === 1) ) {
+			(entity.type === 0 || entity.type === 1) && 
+			((entity.type === 0 && turn === 0) || (entity.type === 1 && turn === 1)) ){
 
 			if (entity.selected) {
 				entity.reset();
@@ -174,6 +180,13 @@ canvas.onclick = (e) => {
 	}
 
 	if (movingEntity) {
+		if (turnsLeft-- <= 1){
+			turn = turn ? 0 : 1;
+			turnsLeft = 5;
+		}
+
+		announce(`${turn?"theifs":"cops"} turn: ${turnsLeft} turns left`);
+
 		if (x - window.innerWidth/100 * movingEntity.x > window.innerWidth/100*4.2)
 			movingEntity.moveHorizontal(true);
 
