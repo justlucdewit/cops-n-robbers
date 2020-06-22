@@ -3,6 +3,8 @@ const map = (n, start1, stop1, start2, stop2) => (n - start1) / (stop1 - start1)
 class Entity {
 	x = 0;
 	y = 0;
+	ypos = 0;
+	xpos = 0;
 	type = 0;// 0=cop; 1=theif; 3=diamond; 4=drugs;
 	hasItem = false;
 	id = 0;
@@ -10,16 +12,24 @@ class Entity {
 	element;
 	selected = false;
 
-	constructor(x, y, type, el) {
+	constructor(x, y, type, el, xpos=0, ypos=0) {
 		this.x = x;
 		this.y = y;
 		this.type = type;
 		Entity.lastId++;
 		this.id = Entity.lastId;
 		this.element = el;
+		this.xpos = xpos;
+		this.ypos = ypos;
 	}
 
 	moveHorizontal(right) {
+		if (right){
+			this.xpos --;
+		}else{
+			this.xpos ++;
+		}
+
 		const oldX = this.x;
 		const animated = this;
 		let interval = setInterval(() => {
@@ -34,6 +44,12 @@ class Entity {
 	}
 
 	moveVertical(up) {
+		if (up){
+			this.ypos --;
+		}else{
+			this.ypos ++;
+		}
+
 		const oldHeight = map(this.y, 0, 100, 0, window.innerHeight);
 		const animated = this;
 		const goal = oldHeight - (board.height/100*9) * (up? 1 : -1);
@@ -80,7 +96,7 @@ const resetGame = () => {
 		newPlayer.style.left = x + "vw";
 		newPlayer.style.top = y + "vh";
 		document.body.appendChild(newPlayer);
-		entities.push(new Entity(x, y, 0, newPlayer));
+		entities.push(new Entity(x, y, 0, newPlayer, 0, i*2));
 	}
 
 	// spawn theifs
@@ -93,7 +109,7 @@ const resetGame = () => {
 		newPlayer.style.left =  x + "vw";
 		newPlayer.style.top = y + "vh";
 		document.body.appendChild(newPlayer);
-		entities.push(new Entity(x, y, 1, newPlayer));
+		entities.push(new Entity(x, y, 1, newPlayer, 19, i*2));
 	}
 
 	// spawn diamonds
@@ -179,25 +195,46 @@ canvas.onclick = (e) => {
 		}
 	}
 
-	if (movingEntity) {
-		if (turnsLeft-- <= 1){
+	if (movingEntity) {		
+		let doneMove = false;
+		if (x - window.innerWidth/100 * movingEntity.x > window.innerWidth/100*4.2) {
+			if (movingEntity.xpos != 19) {
+				movingEntity.moveHorizontal(true);
+				doneMove = true;
+			}
+		}
+
+		else if (x - window.innerWidth/100 * movingEntity.x < 0) {
+			if (movingEntity.xpos != 0) {
+				movingEntity.moveHorizontal(false);
+				doneMove = true;
+			}
+		}
+
+		if (y - window.innerHeight/100 * movingEntity.y < 0) {
+			if (movingEntity.ypos != 0){
+				movingEntity.moveVertical(true);
+				doneMove = true;
+			}
+		}
+
+		else if (y - window.innerHeight/100 * movingEntity.y > window.innerWidth/100*4.2) {
+			if (movingEntity.ypos != 10) {
+				movingEntity.moveVertical(false);
+				doneMove = true;
+			}
+		}
+		
+		if (turnsLeft-- <= 1 && doneMove){
 			turn = turn ? 0 : 1;
 			turnsLeft = 5;
 		}
 
+		if (!doneMove){
+			turnsLeft++;
+		}
+
 		announce(`${turn?"theifs":"cops"} turn: ${turnsLeft} turns left`);
-
-		if (x - window.innerWidth/100 * movingEntity.x > window.innerWidth/100*4.2)
-			movingEntity.moveHorizontal(true);
-
-		if (x - window.innerWidth/100 * movingEntity.x < 0)
-			movingEntity.moveHorizontal(false);
-
-		if (y - window.innerHeight/100 * movingEntity.y < 0)
-			movingEntity.moveVertical(true);
-
-		if (y - window.innerHeight/100 * movingEntity.y > window.innerWidth/100*4.2)
-			movingEntity.moveVertical(false);
 	}
 
 	resetAllClickables();
