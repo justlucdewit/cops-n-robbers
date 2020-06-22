@@ -24,10 +24,15 @@ class Entity {
 	}
 
 	moveHorizontal(right) {
+		// make sure not to pass trough the middle wall
+		if ((this.xpos == 9 && right && !wallPortals.includes(this.ypos)) || (this.ypos == 10 && !right && !wallPortals.includes(this.ypos))){
+			return false;
+		}
+
 		if (right){
-			this.xpos --;
-		}else{
 			this.xpos ++;
+		}else{
+			this.xpos --;
 		}
 
 		const oldX = this.x;
@@ -41,6 +46,8 @@ class Entity {
 				clearInterval(interval);
 			}
 		}, 100);
+
+		return true;
 	}
 
 	moveVertical(up) {
@@ -79,6 +86,7 @@ const entities = [];
 let turn = 0;
 let turnsLeft = 5;
 let entitySize;
+let wallPortals = [2, 3, 7, 8];
 let boardheight = document.getElementById("board").height;
 let gameArea = document.getElementById("board").height * 100 / window.innerHeight;
 
@@ -199,15 +207,13 @@ canvas.onclick = (e) => {
 		let doneMove = false;
 		if (x - window.innerWidth/100 * movingEntity.x > window.innerWidth/100*4.2) {
 			if (movingEntity.xpos != 19) {
-				movingEntity.moveHorizontal(true);
-				doneMove = true;
+				doneMove = movingEntity.moveHorizontal(true);
 			}
 		}
 
 		else if (x - window.innerWidth/100 * movingEntity.x < 0) {
 			if (movingEntity.xpos != 0) {
-				movingEntity.moveHorizontal(false);
-				doneMove = true;
+				doneMove = movingEntity.moveHorizontal(false);
 			}
 		}
 
@@ -238,5 +244,4 @@ canvas.onclick = (e) => {
 	}
 
 	resetAllClickables();
-
 };
